@@ -1,5 +1,6 @@
 
 import { NextResponse } from "next/server";
+import { unstable_rethrow } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 export async function GET() {
@@ -17,7 +18,7 @@ export async function GET() {
       return NextResponse.json(
         {
           conectado: false,
-          erro: error.message,
+          erro: "Não foi possível consultar a tabela produtos. Verifique a URL do projeto, a chave pública e as políticas RLS.",
         },
         { status: 500 }
       );
@@ -29,6 +30,7 @@ export async function GET() {
       produtosEncontrados: data.length,
     });
   } catch (error) {
+    unstable_rethrow(error);
     console.error("Erro inesperado:", error);
 
     return NextResponse.json(
