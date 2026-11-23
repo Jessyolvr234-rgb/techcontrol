@@ -35,6 +35,9 @@ export default function LoginPage() {
           <h1 className="text-3xl font-bold text-black tracking-tight">
             TechControl
           </h1>
+          <p className="text-xs text-gray-400 mt-1">
+            Sistema de Gestão de Vendas
+          </p>
 
           <p className="text-gray-500 text-sm mt-2">
             GESTÃO COMERCIAL
