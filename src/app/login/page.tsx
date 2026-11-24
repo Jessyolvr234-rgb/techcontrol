@@ -30,7 +30,9 @@ export default function LoginPage() {
     e.preventDefault();
     setErro("");
 
-    if (!email.trim() || !senha) {
+    const emailFormatado = email.trim().toLowerCase();
+
+    if (!emailFormatado || !senha) {
       setErro("Preencha seu e-mail e sua senha.");
       return;
     }
@@ -38,21 +40,62 @@ export default function LoginPage() {
     setCarregando(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: emailFormatado,
         password: senha,
       });
 
       if (error) {
-        setErro("E-mail ou senha incorretos. Verifique seus dados.");
+        console.error("Erro de autenticação Supabase:", {
+          message: error.message,
+          code: error.code,
+          status: error.status,
+        });
+
+        switch (error.code) {
+          case "invalid_credentials":
+            setErro(
+              "E-mail ou senha incorretos. Confira os dados cadastrados no Supabase."
+            );
+            break;
+
+          case "email_not_confirmed":
+            setErro(
+              "Seu e-mail ainda não foi confirmado. Verifique a confirmação da conta no Supabase."
+            );
+            break;
+
+          case "user_banned":
+            setErro(
+              "Esta conta está temporariamente bloqueada. Entre em contato com o administrador."
+            );
+            break;
+
+          default:
+            setErro(
+              `Não foi possível entrar: ${error.message}`
+            );
+        }
+
+        return;
+      }
+
+      if (!data.user || !data.session) {
+        setErro(
+          "O Supabase não retornou uma sessão válida. Tente novamente."
+        );
         return;
       }
 
       router.replace("/dashboard");
       router.refresh();
 
-    } catch {
-      setErro("Não foi possível conectar. Tente novamente.");
+    } catch (error) {
+      console.error("Erro inesperado no login:", error);
+
+      setErro(
+        "Não foi possível conectar ao servidor. Verifique sua internet e tente novamente."
+      );
     } finally {
       setCarregando(false);
     }
@@ -60,7 +103,6 @@ export default function LoginPage() {
 
   return (
     <main className="h-[100svh] overflow-hidden bg-[#101010] text-white flex items-center justify-center">
-
       <div className="w-full h-full max-w-[1400px] grid grid-cols-1 lg:grid-cols-2">
 
         {/* PAINEL ESQUERDO */}
@@ -168,6 +210,7 @@ export default function LoginPage() {
                     placeholder="seuemail@exemplo.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    required
                     className="w-full h-12 rounded-xl border border-gray-200 bg-white pl-11 pr-4 text-sm outline-none focus:border-[#b58b45] focus:ring-2 focus:ring-[#c6a15b]/15"
                   />
                 </div>
@@ -191,6 +234,7 @@ export default function LoginPage() {
                     placeholder="Digite sua senha"
                     value={senha}
                     onChange={(e) => setSenha(e.target.value)}
+                    required
                     className="w-full h-12 rounded-xl border border-gray-200 bg-white pl-11 pr-12 text-sm outline-none focus:border-[#b58b45] focus:ring-2 focus:ring-[#c6a15b]/15"
                   />
 
