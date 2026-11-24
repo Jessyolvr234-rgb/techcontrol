@@ -227,7 +227,7 @@ export default function VendasPage() {
         supabase
           .from("produtos")
           .select(
-            "id,nome,modelo,imei,preco_venda,preco_compra,quantidade,ativo"
+            "id,nome,modelo,preco_venda,preco_compra,quantidade,ativo"
           )
           .eq("ativo", true)
           .order("nome", { ascending: true }),
@@ -250,10 +250,7 @@ export default function VendasPage() {
         (product) => ({
           id: product.id,
           name: product.nome,
-          code:
-            product.imei ||
-            product.modelo ||
-            product.id.slice(0, 8),
+          code: product.modelo || product.id.slice(0, 8),
           price: Number(product.preco_venda),
           cost: Number(product.preco_compra),
           stock: Number(product.quantidade),
