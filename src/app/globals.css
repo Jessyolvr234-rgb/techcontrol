@@ -1,6 +1,10 @@
 
 @import "tailwindcss";
 
+/* ========================================
+   CONFIGURAÇÕES GERAIS
+======================================== */
+
 * {
   box-sizing: border-box;
 }
@@ -15,7 +19,250 @@ body {
   color: #171717;
   font-family: Arial, Helvetica, sans-serif;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
+
+/* ========================================
+   ANIMAÇÕES GLOBAIS
+======================================== */
+
+@keyframes enter-page {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes enter-modal {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes subtle-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.65;
+  }
+}
+
+/* ========================================
+   ENTRADA DAS PÁGINAS
+======================================== */
+
+main {
+  animation: enter-page 350ms ease-out both;
+}
+
+.animate-page {
+  animation: enter-page 350ms ease-out both;
+}
+
+.animate-fade-in {
+  animation: fade-in 250ms ease-out both;
+}
+
+.animate-slide-up {
+  animation: slide-up 350ms ease-out both;
+}
+
+.animate-modal {
+  animation: enter-modal 220ms ease-out both;
+}
+
+/* ========================================
+   TRANSIÇÕES E INTERAÇÕES
+======================================== */
+
+button,
+a,
+input,
+select,
+textarea {
+  transition:
+    color 180ms ease,
+    background-color 180ms ease,
+    border-color 180ms ease,
+    opacity 180ms ease,
+    transform 180ms ease,
+    box-shadow 180ms ease;
+}
+
+button:active,
+a:active {
+  transform: scale(0.985);
+}
+
+@media (hover: hover) {
+  button:not(:disabled):hover {
+    filter: brightness(0.97);
+  }
+
+  a:hover {
+    opacity: 0.88;
+  }
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* ========================================
+   MODAIS
+======================================== */
+
+.fixed.z-50 > div[class*="rounded-2xl"],
+.fixed.z-\[60\] > div[class*="rounded-2xl"] {
+  animation: enter-modal 220ms ease-out both;
+}
+
+/* ========================================
+   CARDS
+======================================== */
+
+.card-animated {
+  transition:
+    transform 220ms ease,
+    box-shadow 220ms ease,
+    border-color 220ms ease;
+}
+
+@media (hover: hover) {
+  .card-animated:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.055);
+  }
+}
+
+/* ========================================
+   CARREGAMENTO
+======================================== */
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #eeeeef 25%,
+    #f7f7f8 50%,
+    #eeeeef 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+.animate-pulse-subtle {
+  animation: subtle-pulse 1.8s ease-in-out infinite;
+}
+
+/* ========================================
+   CAMPOS DE FORMULÁRIO
+======================================== */
+
+.input-field {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #ffffff;
+  padding: 11px 12px;
+  color: #171717;
+  font-size: 12px;
+  outline: none;
+  transition:
+    border-color 200ms ease,
+    box-shadow 200ms ease,
+    background-color 200ms ease;
+}
+
+.input-field:focus {
+  border-color: #171717;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);
+}
+
+.input-field:disabled {
+  background: #f9fafb;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+.input-field::placeholder {
+  color: #9ca3af;
+}
+
+.input {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #ffffff;
+  padding: 11px 12px;
+  font-size: 12px;
+  color: #171717;
+  outline: none;
+  transition:
+    border-color 200ms ease,
+    box-shadow 200ms ease;
+}
+
+.input:focus {
+  border-color: #171717;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.06);
+}
+
+.input::placeholder {
+  color: #9ca3af;
+}
+
+/* ========================================
+   RESPONSIVIDADE MOBILE
+======================================== */
 
 @media (max-width: 640px) {
   main {
@@ -73,99 +320,33 @@ body {
   }
 }
 
-@keyframes enter-page {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+/* ========================================
+   ESPAÇO DA NAVEGAÇÃO INFERIOR
+======================================== */
 
-@keyframes enter-modal {
-  from {
-    opacity: 0;
-    transform: translateY(12px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
+@media (max-width: 1023px) {
+  body {
+    padding-bottom: calc(76px + env(safe-area-inset-bottom));
   }
 }
 
-main {
-  animation: enter-page 360ms ease-out both;
+@media (min-width: 1024px) {
+  body {
+    padding-bottom: 0;
+  }
 }
 
-button,
-a,
-section,
-tr {
-  transition-property: color, background-color, border-color, opacity, transform, box-shadow;
-  transition-duration: 180ms;
-  transition-timing-function: ease;
-}
+/* ========================================
+   ACESSIBILIDADE
+======================================== */
 
-button:active,
-a:active {
-  transform: scale(0.98);
-}
-
-section {
-  animation: enter-page 420ms ease-out both;
-}
-
-.fixed.z-50 > div[class*="rounded-2xl"] {
-  animation: enter-modal 220ms ease-out both;
-}
-
-.input-field {
-  width: 100%;
-  min-width: 0;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  background: #ffffff;
-  padding: 11px 12px;
-  color: #171717;
-  font-size: 12px;
-  outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.input-field:focus {
-  border-color: #171717;
-  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);
-}
-
-.input-field:disabled {
-  background: #f9fafb;
-  color: #6b7280;
-  cursor: not-allowed;
-}
-
-.input-field::placeholder {
-  color: #9ca3af;
-}
-
-.input {
-  width: 100%;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  background: #ffffff;
-  padding: 11px 12px;
-  font-size: 12px;
-  color: #171717;
-  outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.input:focus {
-  border-color: #171717;
-  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.06);
-}
-
-.input::placeholder {
-  color: #9ca3af;
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

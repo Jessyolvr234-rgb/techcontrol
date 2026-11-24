@@ -1,17 +1,17 @@
 
 "use client";
 
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+import { useState, type FormEvent } from "react";
+import Link from "next/link";
 import {
   Smartphone,
   Eye,
   EyeOff,
   Lock,
   Mail,
-  User,
   ShieldCheck,
-  BarChart3,
-  Zap,
   ArrowRight,
 } from "lucide-react";
 
@@ -20,240 +20,248 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [lembrar, setLembrar] = useState(true);
+  const [erro, setErro] = useState("");
+  const [carregando, setCarregando] = useState(false);
 
-  function handleLogin(e: React.FormEvent) {
+  const router = useRouter();
+  const supabase = createClient();
+
+  async function handleLogin(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setErro("");
 
-    if (!email || !senha) {
-      alert("Preencha seu e-mail e sua senha.");
+    if (!email.trim() || !senha) {
+      setErro("Preencha seu e-mail e sua senha.");
       return;
     }
 
-    alert("Tela pronta! Vamos conectar a autenticação ao Supabase.");
+    setCarregando(true);
+
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password: senha,
+      });
+
+      if (error) {
+        setErro("E-mail ou senha incorretos. Verifique seus dados.");
+        return;
+      }
+
+      router.replace("/dashboard");
+      router.refresh();
+
+    } catch {
+      setErro("Não foi possível conectar. Tente novamente.");
+    } finally {
+      setCarregando(false);
+    }
   }
 
   return (
-    <main className="min-h-screen bg-[#f3f3f3] flex items-center justify-center p-0 md:p-5">
+    <main className="h-[100svh] overflow-hidden bg-[#101010] text-white flex items-center justify-center">
 
-      <div className="w-full min-h-screen md:min-h-[850px] max-w-[1450px] bg-white md:rounded-[28px] overflow-hidden shadow-2xl grid grid-cols-1 lg:grid-cols-2">
+      <div className="w-full h-full max-w-[1400px] grid grid-cols-1 lg:grid-cols-2">
 
         {/* PAINEL ESQUERDO */}
-        <section className="relative bg-[#111111] text-white px-8 py-10 md:px-14 md:py-14 flex flex-col justify-between overflow-hidden min-h-[390px] lg:min-h-[850px]">
+        <section className="hidden lg:flex relative overflow-hidden flex-col justify-between p-14 xl:p-20 bg-[#101010]">
 
-          {/* DETALHES DECORATIVOS */}
-          <div className="absolute w-[450px] h-[450px] border border-[#c6a15b]/30 rounded-full -right-60 top-20" />
-          <div className="absolute w-[350px] h-[350px] border border-[#c0c0c0]/20 rounded-full -right-40 top-32" />
-          <div className="absolute w-[500px] h-[500px] border-[25px] border-[#c6a15b]/10 rounded-full -left-80 bottom-[-200px]" />
+          <div className="absolute w-[500px] h-[500px] rounded-full border border-[#c6a15b]/10 -right-64 top-20" />
+          <div className="absolute w-[350px] h-[350px] rounded-full border border-[#c6a15b]/10 -left-48 bottom-0" />
 
-          {/* LOGO */}
-          <div className="relative z-10 flex items-center gap-4">
-            <div className="border-2 border-[#c6a15b] p-3 rounded-2xl">
-              <Smartphone size={34} className="text-[#c6a15b]" />
+          <div className="relative z-10 flex items-center gap-3">
+            <div className="p-3 border border-[#c6a15b] rounded-xl">
+              <Smartphone size={27} className="text-[#c6a15b]" />
             </div>
 
             <div>
-              <h1 className="text-3xl font-bold tracking-tight">
+              <h1 className="text-3xl font-bold">
                 Tech<span className="text-[#c6a15b]">Control</span>
               </h1>
-              <p className="text-[10px] tracking-[5px] text-gray-400 mt-1">
+              <p className="text-[9px] tracking-[4px] text-gray-500">
                 GESTÃO COMERCIAL
               </p>
             </div>
           </div>
 
-          {/* TEXTO PRINCIPAL */}
-          <div className="relative z-10 mt-12 lg:mt-0 max-w-lg">
+          <div className="relative z-10 max-w-lg">
+            <span className="text-xs tracking-[4px] text-[#c6a15b]">
+              CONTROLE INTELIGENTE
+            </span>
 
-            <h2 className="text-3xl md:text-4xl font-bold leading-tight">
-              Sua loja de iPhone e iPad,
-              <span className="text-[#c6a15b]"> ainda mais organizada.</span>
+            <h2 className="mt-6 text-5xl xl:text-6xl font-bold leading-tight">
+              Sua loja.
+              <br />
+              Seu controle.
+              <br />
+              <span className="text-[#c6a15b]">
+                Seus resultados.
+              </span>
             </h2>
 
-            <p className="text-gray-300 mt-5 text-base md:text-lg leading-relaxed max-w-md">
-              Controle suas vendas, estoque e finanças de forma simples,
-              rápida e segura.
+            <p className="mt-6 text-gray-400 text-base leading-relaxed max-w-sm">
+              Produtos, estoque, vendas e finanças organizados em um só lugar.
             </p>
 
-            {/* BENEFÍCIOS */}
-            <div className="mt-9 space-y-6">
-
-              <div className="flex items-center gap-4">
-                <div className="border border-[#c6a15b] rounded-full p-3">
-                  <BarChart3 className="text-[#c6a15b]" size={22} />
-                </div>
-                <span className="text-gray-200">Gestão completa da sua loja</span>
+            <div className="mt-10 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl border border-[#c6a15b]/40 flex items-center justify-center">
+                <ShieldCheck size={20} className="text-[#c6a15b]" />
               </div>
-
-              <div className="flex items-center gap-4">
-                <div className="border border-[#c6a15b] rounded-full p-3">
-                  <ShieldCheck className="text-[#c6a15b]" size={22} />
-                </div>
-                <span className="text-gray-200">Dados protegidos e seguros</span>
-              </div>
-
-              <div className="flex items-center gap-4">
-                <div className="border border-[#c6a15b] rounded-full p-3">
-                  <Zap className="text-[#c6a15b]" size={22} />
-                </div>
-                <span className="text-gray-200">Acesso de qualquer lugar</span>
-              </div>
-
+              <span className="text-sm text-gray-400">
+                Gestão simples e organizada para sua loja.
+              </span>
             </div>
           </div>
 
-          {/* RODAPÉ DO PAINEL */}
-          <div className="relative z-10 mt-12 lg:mt-0">
-            <div className="h-px bg-gradient-to-r from-[#c6a15b] via-[#c0c0c0]/30 to-transparent mb-5" />
-            <p className="text-xs text-gray-500 tracking-wider">
-              TECNOLOGIA • CONTROLE • RESULTADOS
-            </p>
-          </div>
-
+          <p className="relative z-10 text-xs text-gray-600 tracking-widest">
+            TECHCONTROL © 2026
+          </p>
         </section>
 
-        {/* PAINEL DIREITO */}
-        <section className="flex items-center justify-center px-6 py-12 md:px-12 lg:px-16 bg-white">
+        {/* PAINEL DE LOGIN */}
+        <section className="h-full min-h-0 bg-[#f8f8f8] text-[#171717] flex flex-col items-center justify-center px-6 sm:px-12">
 
-          <div className="w-full max-w-md">
+          <div className="w-full max-w-[390px]">
 
-            {/* LOGO MOBILE */}
-            <div className="flex lg:hidden flex-col items-center mb-10">
-              <Smartphone size={42} className="text-[#c6a15b] mb-2" />
-              <h1 className="text-3xl font-bold text-[#171717]">
-                Tech<span className="text-[#c6a15b]">Control</span>
+            {/* MARCA MOBILE */}
+            <div className="flex lg:hidden items-center justify-center gap-3 mb-8">
+              <div className="p-2.5 rounded-xl bg-[#171717]">
+                <Smartphone size={24} className="text-[#c6a15b]" />
+              </div>
+              <h1 className="text-2xl font-bold">
+                Tech<span className="text-[#b58b45]">Control</span>
               </h1>
-              <p className="text-xs tracking-[4px] text-gray-400 mt-1">
-                GESTÃO COMERCIAL
-              </p>
             </div>
 
-            {/* CABEÇALHO */}
-            <div className="mb-9">
-              <h2 className="text-3xl font-bold text-[#171717]">
+            <div className="mb-7">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#c6a15b]/10 text-[#a47b35] text-[10px] font-bold tracking-wider mb-4">
+                <span className="w-2 h-2 rounded-full bg-[#c6a15b]" />
+                ACESSO RESTRITO
+              </div>
+
+              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
                 Bem-vindo de volta!
               </h2>
 
-              <p className="text-gray-500 mt-3">
-                Acesse sua conta para continuar.
+              <p className="mt-2 text-sm text-gray-500">
+                Entre com seus dados para continuar.
               </p>
             </div>
 
-            {/* FORMULÁRIO */}
-            <form onSubmit={handleLogin} className="space-y-6">
+            <form onSubmit={handleLogin} className="space-y-4">
 
               {/* EMAIL */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold mb-2">
                   E-mail
                 </label>
 
                 <div className="relative">
-                  <User
-                    size={20}
+                  <Mail
+                    size={18}
                     className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
                   />
 
                   <input
                     type="email"
+                    autoComplete="email"
                     placeholder="seuemail@exemplo.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full h-14 border border-gray-200 rounded-2xl pl-12 pr-4 text-sm text-gray-900 outline-none focus:border-[#c6a15b] focus:ring-2 focus:ring-[#c6a15b]/10 transition"
+                    className="w-full h-12 rounded-xl border border-gray-200 bg-white pl-11 pr-4 text-sm outline-none focus:border-[#b58b45] focus:ring-2 focus:ring-[#c6a15b]/15"
                   />
                 </div>
               </div>
 
               {/* SENHA */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold mb-2">
                   Senha
                 </label>
 
                 <div className="relative">
                   <Lock
-                    size={20}
+                    size={18}
                     className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
                   />
 
                   <input
                     type={mostrarSenha ? "text" : "password"}
+                    autoComplete="current-password"
                     placeholder="Digite sua senha"
                     value={senha}
                     onChange={(e) => setSenha(e.target.value)}
-                    className="w-full h-14 border border-gray-200 rounded-2xl pl-12 pr-12 text-sm text-gray-900 outline-none focus:border-[#c6a15b] focus:ring-2 focus:ring-[#c6a15b]/10 transition"
+                    className="w-full h-12 rounded-xl border border-gray-200 bg-white pl-11 pr-12 text-sm outline-none focus:border-[#b58b45] focus:ring-2 focus:ring-[#c6a15b]/15"
                   />
 
                   <button
                     type="button"
                     onClick={() => setMostrarSenha(!mostrarSenha)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#c6a15b]"
                     aria-label={mostrarSenha ? "Ocultar senha" : "Mostrar senha"}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#a47b35]"
                   >
-                    {mostrarSenha ? (
-                      <EyeOff size={20} />
-                    ) : (
-                      <Eye size={20} />
-                    )}
+                    {mostrarSenha ? <EyeOff size={19} /> : <Eye size={19} />}
                   </button>
                 </div>
               </div>
 
               {/* OPÇÕES */}
-              <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div className="flex items-center justify-between gap-2 pt-1">
 
-                <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                <label className="flex items-center gap-2 text-xs text-gray-600 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={lembrar}
                     onChange={(e) => setLembrar(e.target.checked)}
-                    className="accent-[#c6a15b] w-4 h-4"
+                    className="accent-[#b58b45] w-4 h-4"
                   />
                   Lembrar-me
                 </label>
 
-                <a
+                <Link
                   href="/recuperar-senha"
-                  className="text-sm font-semibold text-[#a77b32] hover:underline"
+                  className="text-xs font-semibold text-[#a47b35] hover:underline"
                 >
                   Esqueci minha senha
-                </a>
-
+                </Link>
               </div>
 
-              {/* BOTÃO ENTRAR */}
+              {/* ERRO */}
+              {erro && (
+                <p
+                  role="alert"
+                  className="text-sm text-red-600 bg-red-50 border border-red-100 p-3 rounded-lg"
+                >
+                  {erro}
+                </p>
+              )}
+
+              {/* BOTÃO */}
               <button
                 type="submit"
-                className="w-full h-14 rounded-2xl bg-gradient-to-r from-[#d7b36a] via-[#b98a3e] to-[#d7b36a] text-white font-bold text-base shadow-lg shadow-[#c6a15b]/20 hover:brightness-105 active:scale-[0.99] transition flex items-center justify-center gap-3"
+                disabled={carregando}
+                className="w-full h-12 rounded-xl bg-gradient-to-r from-[#d8b66f] to-[#a77b35] text-white font-bold text-sm shadow-lg shadow-[#c6a15b]/20 hover:brightness-105 active:scale-[0.99] transition flex items-center justify-center gap-3 disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                Entrar
-                <ArrowRight size={21} />
+                {carregando ? "ENTRANDO..." : "ENTRAR"}
+                {!carregando && <ArrowRight size={18} />}
               </button>
 
             </form>
 
-            {/* DIVISOR */}
-            <div className="flex items-center gap-4 my-8">
-              <div className="flex-1 h-px bg-gray-200" />
-              <span className="text-sm text-gray-400">Acesso seguro</span>
-              <div className="flex-1 h-px bg-gray-200" />
-            </div>
-
             {/* SEGURANÇA */}
-            <div className="flex justify-center items-center gap-2 text-gray-500">
-              <ShieldCheck size={18} className="text-[#b98a3e]" />
+            <div className="mt-7 flex items-center justify-center gap-2 text-gray-400">
+              <ShieldCheck size={16} className="text-[#b58b45]" />
               <span className="text-xs">
-                Seus dados protegidos com segurança
+                Ambiente protegido
               </span>
             </div>
 
-            {/* RODAPÉ */}
-            <p className="text-center text-xs text-gray-400 mt-12">
-              TechControl © 2026 — Todos os direitos reservados.
+            <p className="text-center text-[10px] text-gray-400 mt-7">
+              TechControl © 2026
             </p>
 
           </div>
         </section>
-
       </div>
     </main>
   );
