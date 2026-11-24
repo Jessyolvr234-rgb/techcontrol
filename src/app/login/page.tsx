@@ -24,7 +24,6 @@ export default function LoginPage() {
   const [carregando, setCarregando] = useState(false);
 
   const router = useRouter();
-  const supabase = createClient();
 
   async function handleLogin(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -37,44 +36,59 @@ export default function LoginPage() {
       return;
     }
 
+    if (carregando) return;
+
     setCarregando(true);
 
     try {
+      const supabase = createClient();
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email: emailFormatado,
         password: senha,
       });
 
       if (error) {
-        console.error("Erro de autenticação Supabase:", {
+        console.error("Erro de autenticação:", {
           message: error.message,
           code: error.code,
           status: error.status,
+          name: error.name,
         });
 
-        switch (error.code) {
-          case "invalid_credentials":
-            setErro(
-              "E-mail ou senha incorretos. Confira os dados cadastrados no Supabase."
-            );
-            break;
+        const codigo = error.code?.toLowerCase() ?? "";
+        const mensagem = error.message.toLowerCase();
 
-          case "email_not_confirmed":
-            setErro(
-              "Seu e-mail ainda não foi confirmado. Verifique a confirmação da conta no Supabase."
-            );
-            break;
-
-          case "user_banned":
-            setErro(
-              "Esta conta está temporariamente bloqueada. Entre em contato com o administrador."
-            );
-            break;
-
-          default:
-            setErro(
-              `Não foi possível entrar: ${error.message}`
-            );
+        if (
+          codigo === "invalid_credentials" ||
+          mensagem.includes("invalid login credentials")
+        ) {
+          setErro(
+            "Não foi possível autenticar. Confira se o e-mail está cadastrado em Authentication → Users e se a senha está correta."
+          );
+        } else if (
+          codigo === "email_not_confirmed" ||
+          mensagem.includes("email not confirmed")
+        ) {
+          setErro(
+            "Seu e-mail ainda não foi confirmado. Verifique a confirmação da conta no Supabase."
+          );
+        } else if (
+          codigo === "user_banned" ||
+          mensagem.includes("banned")
+        ) {
+          setErro(
+            "Esta conta está temporariamente bloqueada. Entre em contato com o administrador."
+          );
+        } else if (
+          mensagem.includes("fetch") ||
+          mensagem.includes("network")
+        ) {
+          setErro(
+            "Não foi possível conectar ao Supabase. Verifique sua URL, chave pública e conexão com a internet."
+          );
+        } else {
+          setErro(`Erro do Supabase: ${error.message}`);
         }
 
         return;
@@ -87,14 +101,20 @@ export default function LoginPage() {
         return;
       }
 
+      console.log("Login realizado com sucesso.");
+
       router.replace("/dashboard");
       router.refresh();
-
     } catch (error) {
       console.error("Erro inesperado no login:", error);
 
+      const mensagem =
+        error instanceof Error
+          ? error.message
+          : "Erro desconhecido.";
+
       setErro(
-        "Não foi possível conectar ao servidor. Verifique sua internet e tente novamente."
+        `Não foi possível entrar: ${mensagem}`
       );
     } finally {
       setCarregando(false);
@@ -102,17 +122,17 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="h-[100svh] overflow-hidden bg-[#101010] text-white flex items-center justify-center">
-      <div className="w-full h-full max-w-[1400px] grid grid-cols-1 lg:grid-cols-2">
+    <main className="flex h-[100svh] items-center justify-center overflow-hidden bg-[#101010] text-white">
+      <div className="grid h-full w-full max-w-[1400px] grid-cols-1 lg:grid-cols-2">
 
         {/* PAINEL ESQUERDO */}
-        <section className="hidden lg:flex relative overflow-hidden flex-col justify-between p-14 xl:p-20 bg-[#101010]">
+        <section className="relative hidden flex-col justify-between overflow-hidden bg-[#101010] p-14 lg:flex xl:p-20">
 
-          <div className="absolute w-[500px] h-[500px] rounded-full border border-[#c6a15b]/10 -right-64 top-20" />
-          <div className="absolute w-[350px] h-[350px] rounded-full border border-[#c6a15b]/10 -left-48 bottom-0" />
+          <div className="absolute -right-64 top-20 h-[500px] w-[500px] rounded-full border border-[#c6a15b]/10" />
+          <div className="absolute -left-48 bottom-0 h-[350px] w-[350px] rounded-full border border-[#c6a15b]/10" />
 
           <div className="relative z-10 flex items-center gap-3">
-            <div className="p-3 border border-[#c6a15b] rounded-xl">
+            <div className="rounded-xl border border-[#c6a15b] p-3">
               <Smartphone size={27} className="text-[#c6a15b]" />
             </div>
 
@@ -131,7 +151,7 @@ export default function LoginPage() {
               CONTROLE INTELIGENTE
             </span>
 
-            <h2 className="mt-6 text-5xl xl:text-6xl font-bold leading-tight">
+            <h2 className="mt-6 text-5xl font-bold leading-tight xl:text-6xl">
               Sua loja.
               <br />
               Seu controle.
@@ -141,47 +161,49 @@ export default function LoginPage() {
               </span>
             </h2>
 
-            <p className="mt-6 text-gray-400 text-base leading-relaxed max-w-sm">
+            <p className="mt-6 max-w-sm text-base leading-relaxed text-gray-400">
               Produtos, estoque, vendas e finanças organizados em um só lugar.
             </p>
 
             <div className="mt-10 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl border border-[#c6a15b]/40 flex items-center justify-center">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#c6a15b]/40">
                 <ShieldCheck size={20} className="text-[#c6a15b]" />
               </div>
+
               <span className="text-sm text-gray-400">
                 Gestão simples e organizada para sua loja.
               </span>
             </div>
           </div>
 
-          <p className="relative z-10 text-xs text-gray-600 tracking-widest">
+          <p className="relative z-10 text-xs tracking-widest text-gray-600">
             TECHCONTROL © 2026
           </p>
         </section>
 
         {/* PAINEL DE LOGIN */}
-        <section className="h-full min-h-0 bg-[#f8f8f8] text-[#171717] flex flex-col items-center justify-center px-6 sm:px-12">
+        <section className="flex h-full min-h-0 flex-col items-center justify-center bg-[#f8f8f8] px-6 text-[#171717] sm:px-12">
 
           <div className="w-full max-w-[390px]">
 
             {/* MARCA MOBILE */}
-            <div className="flex lg:hidden items-center justify-center gap-3 mb-8">
-              <div className="p-2.5 rounded-xl bg-[#171717]">
+            <div className="mb-8 flex items-center justify-center gap-3 lg:hidden">
+              <div className="rounded-xl bg-[#171717] p-2.5">
                 <Smartphone size={24} className="text-[#c6a15b]" />
               </div>
+
               <h1 className="text-2xl font-bold">
                 Tech<span className="text-[#b58b45]">Control</span>
               </h1>
             </div>
 
             <div className="mb-7">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#c6a15b]/10 text-[#a47b35] text-[10px] font-bold tracking-wider mb-4">
-                <span className="w-2 h-2 rounded-full bg-[#c6a15b]" />
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-[#c6a15b]/10 px-3 py-1.5 text-[10px] font-bold tracking-wider text-[#a47b35]">
+                <span className="h-2 w-2 rounded-full bg-[#c6a15b]" />
                 ACESSO RESTRITO
               </div>
 
-              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
+              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
                 Bem-vindo de volta!
               </h2>
 
@@ -194,7 +216,7 @@ export default function LoginPage() {
 
               {/* EMAIL */}
               <div>
-                <label className="block text-sm font-semibold mb-2">
+                <label className="mb-2 block text-sm font-semibold">
                   E-mail
                 </label>
 
@@ -211,14 +233,15 @@ export default function LoginPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="w-full h-12 rounded-xl border border-gray-200 bg-white pl-11 pr-4 text-sm outline-none focus:border-[#b58b45] focus:ring-2 focus:ring-[#c6a15b]/15"
+                    disabled={carregando}
+                    className="h-12 w-full rounded-xl border border-gray-200 bg-white pl-11 pr-4 text-sm outline-none focus:border-[#b58b45] focus:ring-2 focus:ring-[#c6a15b]/15 disabled:opacity-60"
                   />
                 </div>
               </div>
 
               {/* SENHA */}
               <div>
-                <label className="block text-sm font-semibold mb-2">
+                <label className="mb-2 block text-sm font-semibold">
                   Senha
                 </label>
 
@@ -235,7 +258,8 @@ export default function LoginPage() {
                     value={senha}
                     onChange={(e) => setSenha(e.target.value)}
                     required
-                    className="w-full h-12 rounded-xl border border-gray-200 bg-white pl-11 pr-12 text-sm outline-none focus:border-[#b58b45] focus:ring-2 focus:ring-[#c6a15b]/15"
+                    disabled={carregando}
+                    className="h-12 w-full rounded-xl border border-gray-200 bg-white pl-11 pr-12 text-sm outline-none focus:border-[#b58b45] focus:ring-2 focus:ring-[#c6a15b]/15 disabled:opacity-60"
                   />
 
                   <button
@@ -244,20 +268,23 @@ export default function LoginPage() {
                     aria-label={mostrarSenha ? "Ocultar senha" : "Mostrar senha"}
                     className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#a47b35]"
                   >
-                    {mostrarSenha ? <EyeOff size={19} /> : <Eye size={19} />}
+                    {mostrarSenha ? (
+                      <EyeOff size={19} />
+                    ) : (
+                      <Eye size={19} />
+                    )}
                   </button>
                 </div>
               </div>
 
               {/* OPÇÕES */}
               <div className="flex items-center justify-between gap-2 pt-1">
-
-                <label className="flex items-center gap-2 text-xs text-gray-600 cursor-pointer">
+                <label className="flex cursor-pointer items-center gap-2 text-xs text-gray-600">
                   <input
                     type="checkbox"
                     checked={lembrar}
                     onChange={(e) => setLembrar(e.target.checked)}
-                    className="accent-[#b58b45] w-4 h-4"
+                    className="h-4 w-4 accent-[#b58b45]"
                   />
                   Lembrar-me
                 </label>
@@ -272,38 +299,38 @@ export default function LoginPage() {
 
               {/* ERRO */}
               {erro && (
-                <p
+                <div
                   role="alert"
-                  className="text-sm text-red-600 bg-red-50 border border-red-100 p-3 rounded-lg"
+                  className="rounded-lg border border-red-100 bg-red-50 p-3 text-sm text-red-600"
                 >
                   {erro}
-                </p>
+                </div>
               )}
 
               {/* BOTÃO */}
               <button
                 type="submit"
                 disabled={carregando}
-                className="w-full h-12 rounded-xl bg-gradient-to-r from-[#d8b66f] to-[#a77b35] text-white font-bold text-sm shadow-lg shadow-[#c6a15b]/20 hover:brightness-105 active:scale-[0.99] transition flex items-center justify-center gap-3 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="flex h-12 w-full items-center justify-center gap-3 rounded-xl bg-gradient-to-r from-[#d8b66f] to-[#a77b35] text-sm font-bold text-white shadow-lg shadow-[#c6a15b]/20 transition hover:brightness-105 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {carregando ? "ENTRANDO..." : "ENTRAR"}
+
                 {!carregando && <ArrowRight size={18} />}
               </button>
-
             </form>
 
             {/* SEGURANÇA */}
             <div className="mt-7 flex items-center justify-center gap-2 text-gray-400">
               <ShieldCheck size={16} className="text-[#b58b45]" />
+
               <span className="text-xs">
                 Ambiente protegido
               </span>
             </div>
 
-            <p className="text-center text-[10px] text-gray-400 mt-7">
+            <p className="mt-7 text-center text-[10px] text-gray-400">
               TechControl © 2026
             </p>
-
           </div>
         </section>
       </div>
