@@ -88,6 +88,7 @@ function startOfDay(date: Date) {
 function getDateRange(period: Period) {
   const now = new Date();
   const end = new Date(now);
+
   end.setDate(end.getDate() + 1);
   end.setHours(0, 0, 0, 0);
 
@@ -117,9 +118,10 @@ function getDateRange(period: Period) {
 function buildChart(
   period: Period,
   sales: Sale[],
-  expenses: CashMovement[]
+  expenses: CashMovement[],
+  currentDate: Date
 ): ChartItem[] {
-  const now = new Date();
+  const now = currentDate;
   const buckets: ChartItem[] = [];
 
   if (period === "Esta semana") {
@@ -184,6 +186,7 @@ function buildChart(
 
     sales.forEach((sale) => {
       const index = getIndex(sale.created_at);
+
       if (buckets[index]) {
         buckets[index].revenue += numberValue(sale.total);
       }
@@ -191,6 +194,7 @@ function buildChart(
 
     expenses.forEach((item) => {
       const index = getIndex(item.created_at);
+
       if (buckets[index]) {
         buckets[index].expense += numberValue(item.valor);
       }
@@ -253,6 +257,8 @@ export default function RelatoriosPage() {
   const [cashMovements, setCashMovements] = useState<CashMovement[]>([]);
   const [saleItems, setSaleItems] = useState<SaleItem[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+
+  const [currentDate, setCurrentDate] = useState<Date | null>(null);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -347,6 +353,7 @@ export default function RelatoriosPage() {
   }, [period, supabase]);
 
   useEffect(() => {
+    setCurrentDate(new Date());
     loadReports();
   }, [loadReports]);
 
@@ -385,8 +392,11 @@ export default function RelatoriosPage() {
   }, [sales, cashMovements, saleItems]);
 
   const chartData = useMemo(
-    () => buildChart(period, sales, cashMovements),
-    [period, sales, cashMovements]
+    () =>
+      currentDate
+        ? buildChart(period, sales, cashMovements, currentDate)
+        : [],
+    [period, sales, cashMovements, currentDate]
   );
 
   const maxChartValue = Math.max(
