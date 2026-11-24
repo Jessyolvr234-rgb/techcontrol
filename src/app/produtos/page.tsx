@@ -36,7 +36,6 @@ type Product = {
   storage: string;
   color: string;
   condition: string;
-  imei: string;
   quantity: number;
   cost: number;
   price: number;
@@ -63,7 +62,6 @@ const emptyProduct: ProductForm = {
   storage: "128GB",
   color: "",
   condition: "Novo",
-  imei: "",
   quantity: 1,
   cost: 0,
   price: 0,
@@ -90,7 +88,6 @@ function mapProduct(item: any): Product {
     storage: item.armazenamento ?? "",
     color: item.cor ?? "",
     condition: item.condicao ?? "Novo",
-    imei: item.imei ?? "",
     quantity: Number(item.quantidade ?? 0),
     cost: Number(item.preco_compra ?? 0),
     price: Number(item.preco_venda ?? 0),
@@ -209,7 +206,9 @@ export default function ProdutosPage() {
 
     if (error) {
       console.error("Erro ao carregar produtos:", error);
-      setErrorMessage(`Não foi possível carregar os produtos: ${error.message}`);
+      setErrorMessage(
+        `Não foi possível carregar os produtos: ${error.message}`
+      );
       setLoading(false);
       return;
     }
@@ -225,7 +224,7 @@ export default function ProdutosPage() {
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
       const matchesSearch =
-        `${product.name} ${product.imei} ${product.color} ${product.model}`
+        `${product.name} ${product.color} ${product.model}`
           .toLowerCase()
           .includes(search.toLowerCase());
 
@@ -269,7 +268,6 @@ export default function ProdutosPage() {
       storage: product.storage,
       color: product.color,
       condition: product.condition,
-      imei: product.imei,
       quantity: product.quantity,
       cost: product.cost,
       price: product.price,
@@ -313,7 +311,6 @@ export default function ProdutosPage() {
       armazenamento: form.storage,
       cor: form.color.trim(),
       condicao: form.condition,
-      imei: form.imei.trim(),
       quantidade: form.quantity,
       preco_compra: form.cost,
       preco_venda: form.price,
@@ -530,7 +527,7 @@ export default function ProdutosPage() {
                     <input
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
-                      placeholder="Pesquisar produto ou IMEI..."
+                      placeholder="Pesquisar produto..."
                       className="w-full bg-transparent text-xs outline-none"
                     />
                   </div>
@@ -552,11 +549,10 @@ export default function ProdutosPage() {
               </div>
 
               <div className="overflow-x-auto">
-                <table className="w-full min-w-[850px] text-left">
+                <table className="w-full min-w-[760px] text-left">
                   <thead>
                     <tr className="border-b border-gray-100 text-[10px] text-gray-400">
                       <th className="pb-4 font-medium">Produto</th>
-                      <th className="pb-4 font-medium">IMEI / Série</th>
                       <th className="pb-4 font-medium">Condição</th>
                       <th className="pb-4 font-medium">Quantidade</th>
                       <th className="pb-4 font-medium">Custo</th>
@@ -569,7 +565,7 @@ export default function ProdutosPage() {
                   <tbody>
                     {loading && (
                       <tr>
-                        <td colSpan={8} className="py-12 text-center text-xs text-gray-400">
+                        <td colSpan={7} className="py-12 text-center text-xs text-gray-400">
                           Carregando produtos...
                         </td>
                       </tr>
@@ -598,9 +594,6 @@ export default function ProdutosPage() {
                           </div>
                         </td>
 
-                        <td className="py-4 text-xs text-gray-500">
-                          {product.imei || "Não informado"}
-                        </td>
                         <td className="py-4">
                           <span className="rounded-md border border-[#C6A15B]/20 bg-[#C6A15B]/10 px-2 py-1 text-[10px] text-[#8B713D]">
                             {product.condition}
@@ -643,7 +636,7 @@ export default function ProdutosPage() {
 
                     {!loading && filteredProducts.length === 0 && (
                       <tr>
-                        <td colSpan={8} className="py-12 text-center text-xs text-gray-400">
+                        <td colSpan={7} className="py-12 text-center text-xs text-gray-400">
                           Nenhum produto encontrado.
                         </td>
                       </tr>
@@ -763,15 +756,6 @@ export default function ProdutosPage() {
                       <option>Seminovo</option>
                       <option>Usado</option>
                     </select>
-                  </Field>
-
-                  <Field label="IMEI / Número de série">
-                    <input
-                      value={form.imei}
-                      onChange={(e) => setForm({ ...form, imei: e.target.value })}
-                      placeholder="Identificação individual"
-                      className={inputClass}
-                    />
                   </Field>
 
                   <Field label="Quantidade inicial">
@@ -909,7 +893,6 @@ export default function ProdutosPage() {
             <div className="space-y-3 text-xs">
               <Detail label="Categoria" value={viewProduct.category} />
               <Detail label="Modelo" value={viewProduct.model} />
-              <Detail label="IMEI / Série" value={viewProduct.imei} />
               <Detail label="Condição" value={viewProduct.condition} />
               <Detail label="Quantidade" value={String(viewProduct.quantity)} />
               <Detail label="Custo" value={money(viewProduct.cost)} />
